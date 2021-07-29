@@ -2,6 +2,103 @@
 install.packages(haven)
 library(haven)
 
+nigerR5 <- read_sav("./Documents/students/stats/louiselotte/ngr_r5_data_july_2015.sav")
+
+nigerR5 <- data.frame(Response=nigerR5$RESPNO,
+                      LivingArea=nigerR5$URBRUR,
+                      Region=nigerR5$REGION,
+                      Gender=nigerR5$THISINT,
+                      Age=nigerR5$Q1,
+                      Poverty=nigerR5$Q8A,
+                      TrustPresident=nigerR5$Q59A,
+                      TrustParliament=nigerR5$Q59B,
+                      TrustElectLoc=nigerR5$Q59E,
+                      TrustPolice=nigerR5$Q59H,
+                      TrustArmy=nigerR5$Q59I,
+                      Education=nigerR5$Q97)
+head(nigerR5)
+nrow(nigerR5)
+str(nigerR5)
+
+#####################
+# Control Variables #
+#####################
+
+# Age 1: young (< 25), 0: old (>= 25)
+head(nigerR5$Age)
+##########################################################
+# eliminate "Missing", "Ne sait pas" values #
+##########################################################
+nigerR5 <- nigerR5[!(nigerR5$Age == -1 | nigerR5$Age == 999),] # eliminate missing values
+
+controlAge1 <- nigerR5$Age < 25
+nigerR5$Age[controlAge1] <- 1
+controlAge0 <- nigerR5$Age >= 25
+nigerR5$Age[controlAge0] <- 0
+
+
+
+# Gender 1: male, 0: female
+head(nigerR5$Gender)
+nigerR5 <- nigerR5[!nigerR5$Gender == -1,] # eliminate missing values
+controlGender0 <- nigerR5$Gender == 2
+nigerR5$Gender[controlGender0] <- 0
+
+# Living Area 1: Urban, 0: Rural
+head(nigerR5$LivingArea)
+controlLivingArea0 <- nigerR5$LivingArea == 2
+nigerR5$LivingArea[controlLivingArea0] <- 0
+
+
+# Education 1: Secondary or higher, 0: else
+head(nigerR5$Education)
+##########################################################
+# eliminate "Missing", "Ne sait pas" values #
+##########################################################
+nigerR5 <- nigerR5[!(nigerR5$Education == -1 | nigerR5$Education == 99),] 
+controlleducation1 <- nigerR5$Education >= 5
+nigerR5$Education[controlleducation1] <- 1
+controlleducation0 <- nigerR5$Education < 5
+nigerR5$Education[controlleducation0] <- 0
+
+# Poverty 1: without food many times, 0: else
+head(nigerR5$Poverty)
+##########################################################
+# eliminate "Missing", "Ne sait pas" values #
+##########################################################
+nigerR5 <- nigerR5[!(nigerR5$Poverty == -1 | nigerR5$Poverty == 9),] 
+controlPoverty1 <- nigerR5$Poverty == 3 | nigerR5$Poverty == 4
+nigerR5$Poverty[controlPoverty1] <- 1
+controlPoverty0 <- nigerR5$Poverty != 1
+nigerR5$Poverty[controlPoverty0] <- 0
+
+# controlled data frame
+controlledNigerR5 <- data.frame(Response=nigerR5$Response,
+                                LivingArea=nigerR5$LivingArea,
+                                Region=nigerR5$Region,
+                                Gender=nigerR5$Gender,
+                                Age=nigerR5$Age,
+                                Poverty=nigerR5$Poverty,
+                                TrustPresident=nigerR5$TrustPresident,
+                                TrustParliament=nigerR5$TrustParliament,
+                                TrustElectLoc=nigerR5$TrustElectLoc,
+                                TrustPolice=nigerR5$TrustPolice,
+                                TrustArmy=nigerR5$TrustArmy,
+                                Education=nigerR5$Education)
+
+head(controlledNigerR5, n=100)
+
+##############################################################################
+##############################################################################
+
+agadezR5 <- nigerR5$Region == 1110
+zinderR5 <- nigerR5$Region == 1106
+tahouaR5 <- nigerR5$Region == 1104
+AZTregionR5 <-  agadezR5 | zinderR5 | tahouaR5 
+AZTgroupR5 <- ifelse(AZTregionR5, 1, 0)
+controlledNigerR5$groupAZT <- AZTgroupR5
+head(controlledNigerR5, n=800)
+
 # Importing the raw data set
 niger6 <- read_sav("./Documents/students/stats/louiselotte/ngr_r6_data_2016_eng.sav")
 nrow(niger6)
@@ -106,6 +203,19 @@ controlledNigerR6 <- data.frame(Response=nigerR6$Response,
 
 head(controlledNigerR6, n=100)
 
+
+# Eliminate TradiLead because we can't find it in nigerR5 :(
+controlledNigerR6$TrustTradiLead <- NULL
+
+agadezR6 <- nigerR6$Region == 1110
+zinderR6 <- nigerR6$Region == 1106
+tahouaR6 <- nigerR6$Region == 1104
+AZTregionR6 <-  agadezR6 | zinderR6 | tahouaR6 
+AZTgroupR6 <- ifelse(AZTregionR6, 1, 0)
+controlledNigerR6$groupAZT <- AZTgroupR6
+head(controlledNigerR6, n=800)
+
+
 ##############################################################################
 ##############################################################################
 
@@ -197,98 +307,35 @@ controlledNigerR7 <- data.frame(Response=nigerR7$Response,
 
 head(controlledNigerR7, n=100)
 
+# Eliminate TradiLead because we can't find it in nigerR5 :(
+controlledNigerR7$TrustTradiLead <- NULL
+
+agadezR7 <- nigerR7$Region == 1110
+zinderR7 <- nigerR7$Region == 1106
+tahouaR7 <- nigerR7$Region == 1104
+AZTregionR7 <-  agadezR7 | zinderR7 | tahouaR7 
+AZTgroupR7 <- ifelse(AZTregionR7, 1, 0)
+controlledNigerR7$groupAZT <- AZTgroupR7
+head(controlledNigerR7, n=800)
 ##############################################################################
 ##############################################################################
 
-                      
-nigerR5 <- read_sav("./Documents/students/stats/louiselotte/ngr_r5_data_july_2015.sav")
+fusionNiger <- rbind(controlledNigerR5, controlledNigerR6, controlledNigerR7)
+ncol(controlledNigerR5)
+ncol(controlledNigerR6)
+ncol(controlledNigerR7)
+head(controlledNigerR5)
+head(controlledNigerR6)
+length(AZTgroupR5)
+AZTgroupR5 <- as.matrix(AZTgroupR5)
+AZTgroupR6 <- as.matrix(AZTgroupR6)
+AZTgroupR7 <- as.matrix(AZTgroupR7)
+fusionAZT <- rbind(AZTgroupR5, AZTgroupR6, AZTgroupR7)
+is.matrix(fusionAZT)
+fusionAZT <- as.vector(fusionAZT)
+fusionAZT
 
-nigerR5 <- data.frame(Response=nigerR5$RESPNO,
-                      LivingArea=nigerR5$URBRUR,
-                      Region=nigerR5$REGION,
-                      Gender=nigerR5$THISINT,
-                      Age=nigerR5$Q1,
-                      Poverty=nigerR5$Q8A,
-                      TrustPresident=nigerR5$Q59A,
-                      TrustParliament=nigerR5$Q59B,
-                      TrustElectLoc=nigerR5$Q59E,
-                      TrustPolice=nigerR5$Q59H,
-                      TrustArmy=nigerR5$Q59I,
-                      Education=nigerR5$Q97)
-head(nigerR5)
-nrow(nigerR5)
-str(nigerR5)
-
-#####################
-# Control Variables #
-#####################
-
-# Age 1: young (< 25), 0: old (>= 25)
-head(nigerR5$Age)
-##########################################################
-# eliminate "Missing", "Ne sait pas" values #
-##########################################################
-nigerR5 <- nigerR5[!(nigerR5$Age == -1 | nigerR5$Age == 999),] # eliminate missing values
-
-controlAge1 <- nigerR5$Age < 25
-nigerR5$Age[controlAge1] <- 1
-controlAge0 <- nigerR5$Age >= 25
-nigerR5$Age[controlAge0] <- 0
-
-
-
-# Gender 1: male, 0: female
-head(nigerR5$Gender)
-nigerR5 <- nigerR5[!nigerR5$Gender == -1,] # eliminate missing values
-controlGender0 <- nigerR5$Gender == 2
-nigerR5$Gender[controlGender0] <- 0
-
-# Living Area 1: Urban, 0: Rural
-head(nigerR5$LivingArea)
-controlLivingArea0 <- nigerR5$LivingArea == 2
-nigerR5$LivingArea[controlLivingArea0] <- 0
-
-
-# Education 1: Secondary or higher, 0: else
-head(nigerR5$Education)
-##########################################################
-# eliminate "Missing", "Ne sait pas" values #
-##########################################################
-nigerR5 <- nigerR5[!(nigerR5$Education == -1 | nigerR5$Education == 99),] 
-controlleducation1 <- nigerR5$Education >= 5
-nigerR5$Education[controlleducation1] <- 1
-controlleducation0 <- nigerR5$Education < 5
-nigerR5$Education[controlleducation0] <- 0
-
-# Poverty 1: without food many times, 0: else
-head(nigerR5$Poverty)
-##########################################################
-# eliminate "Missing", "Ne sait pas" values #
-##########################################################
-nigerR5 <- nigerR5[!(nigerR5$Poverty == -1 | nigerR5$Poverty == 9),] 
-controlPoverty1 <- nigerR5$Poverty == 3 | nigerR5$Poverty == 4
-nigerR5$Poverty[controlPoverty1] <- 1
-controlPoverty0 <- nigerR5$Poverty != 1
-nigerR5$Poverty[controlPoverty0] <- 0
-
-# controlled data frame
-controlledNigerR5 <- data.frame(Response=nigerR5$Response,
-                               LivingArea=nigerR5$LivingArea,
-                               Region=nigerR5$Region,
-                               Gender=nigerR5$Gender,
-                               Age=nigerR5$Age,
-                               Poverty=nigerR5$Poverty,
-                               TrustPresident=nigerR5$TrustPresident,
-                               TrustParliament=nigerR5$TrustParliament,
-                               TrustElectLoc=nigerR5$TrustElectLoc,
-                               TrustPolice=nigerR5$TrustPolice,
-                               TrustArmy=nigerR5$TrustArmy,
-                               Education=nigerR5$Education)
-
-head(controlledNigerR5, n=100)
-
-##############################################################################
-##############################################################################
-
-
-
+# Objectives : 
+# 1) merge controlledNigerR5, R6, R7
+# 2) eliminate missing, don't know and refuse from all trust (clean trust)
+# 3) run regression 
